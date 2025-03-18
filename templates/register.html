@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+
+{% block title %}Register - WWMSID{% endblock %}
+
+{% block header %}<h1>Register</h1>{% endblock %}
+
+{% block content %}
+    <div class="content-container">
+        <h2>Create an Account</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            {{ form.username(class="form-control", placeholder="Username") }}
+            {{ form.email(class="form-control", placeholder="Email") }}
+            {{ form.password(class="form-control", placeholder="Password") }}
+            {{ form.confirm_password(class="form-control", placeholder="Confirm Password") }}
+            <button type="submit" class="button">Sign Up</button>
+        </form>
+
+    </div>
+{% endblock %}
+

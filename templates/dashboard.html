@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+
+{% block title %}Dashboard - WWMSID{% endblock %}
+
+{% block header %}<h1>Welcome to the Dashboard</h1>{% endblock %}
+
+{% block content %}
+<div class="content-container">
+        <h2>Welcome, {{ username }}!</h2>
+        <p>This is your dashboard where you can manage your scuba diving content.</p>
+        <a href="/logout" class="button">Logout</a>
+    </div>
+{% endblock %}
+
