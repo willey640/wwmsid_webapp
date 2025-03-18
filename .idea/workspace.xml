@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="89471358-b3c8-4637-940d-92c38161ccae" name="Changes" comment="added coinmarket key" />
+    <list default="true" id="89471358-b3c8-4637-940d-92c38161ccae" name="Changes" comment="fixed requirements.txt spelling again" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -90,12 +90,21 @@
       <option name="project" value="LOCAL" />
       <updated>1742331588468</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="fixed requirements.txt spelling again">
+      <option name="closed" value="true" />
+      <created>1742332218596</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1742332218596</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="updated all seems to be working" />
     <MESSAGE value="added coinmarket key" />
-    <option name="LAST_COMMIT_MESSAGE" value="added coinmarket key" />
+    <MESSAGE value="fixed requirements.txt spelling again" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed requirements.txt spelling again" />
   </component>
 </project>
