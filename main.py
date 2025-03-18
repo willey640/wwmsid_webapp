@@ -10,7 +10,8 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import random
-
+import os
+import pandas as pd
 
 
 
@@ -47,7 +48,45 @@ WIN_GIF = "https://media4.giphy.com/media/ak49R7kVC4kccblgxZ/giphy.gif"
 
 answer = random.randint(1, 9)
 
+class CryptoData:
+    def __init__(self, api_key, url):
+        self.api_key = api_key
+        self.url = url
+        self.parameters = {'start': '1', 'limit': '100', 'convert': 'CAD'}
+        self.headers = {'Accepts': 'application/json', 'X-CMC_PRO_API_KEY': self.api_key}
+        self.json_dicts = {}
 
+    def load_data(self):
+        try:
+            with open("static/data.json", 'r') as data_file:
+                data = json.load(data_file)
+                coins = data.get('data', [])
+            self.json_dicts = {x['symbol']: x['quote']['CAD']['price'] for x in coins if
+                               'quote' in x and 'CAD' in x['quote']}
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(f"Error loading data: {e}")
+            self.json_dicts = {}
+
+    def update_data(self):
+        try:
+            response = requests.get(self.url, params=self.parameters, headers=self.headers)
+            response.raise_for_status()
+            data = response.json()
+            with open("static/data.json", 'w') as data_file:
+                json.dump(data, data_file, indent=4)
+            self.load_data()
+        except requests.RequestException as e:
+            print(f"Error fetching data: {e}")
+
+
+class UserHoldings:
+    @staticmethod
+    def get_user_holdings():
+        try:
+            data = pd.read_csv("static/holdings.csv")
+            return data.to_dict(orient="list")  # Fix for returning structured dictionary
+        except FileNotFoundError:
+            return {'Coin': [], 'qty': [], 'value': []}
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -188,6 +227,88 @@ def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('home'))
+
+# Crypto section 
+@app.route('/cryptoh')
+def cryptoh():
+    crypto_data.update_data()
+    user_holdings = UserHoldings.get_user_holdings()
+    holdings = []
+    total_value = 0
+    plus_minus_total = 0
+
+    for i in range(len(user_holdings['Coin'])):
+        symbol = user_holdings['Coin'][i]
+        qty = user_holdings['qty'][i]
+        buy_value = user_holdings['value'][i]
+        current_price = crypto_data.json_dicts.get(symbol, 0)
+        current_value = current_price * qty
+        plus_minus = current_value - buy_value
+
+        holdings.append({
+            'symbol': symbol,
+            'qty': qty,
+            'current_price': round(current_price, 2),
+            'current_value': round(current_value, 2),
+            'plus_minus': round(plus_minus, 2)  # 🔹 Ensure this key exists
+        })
+
+        total_value += current_value
+        plus_minus_total += plus_minus
+
+    return render_template('cryptoh.html', holdings=holdings, total_value=round(total_value, 2), plus_minus_total=round(plus_minus_total, 2))
+
+
+@app.route('/update_crypto', methods=['POST'])
+def update_crypto():
+    action = request.form.get('action')
+    symbol = request.form['symbol'].upper()
+
+    try:
+        quantity = float(request.form['quantity'])
+        amount = float(request.form['amount'])
+    except ValueError:
+        print("Error: Invalid numeric input")
+        return redirect(url_for('index'))
+
+    # When performing any update, first load (or create) the CSV file
+    if os.path.exists("static/holdings.csv"):
+        df = pd.read_csv("static/holdings.csv")
+    else:
+        df = pd.DataFrame(columns=['Coin', 'qty', 'value'])
+
+    if action == "add":
+        if symbol in df['Coin'].values:
+            df.loc[df['Coin'] == symbol, 'qty'] += quantity
+            df.loc[df['Coin'] == symbol, 'value'] += amount
+        else:
+            new_row = pd.DataFrame({'Coin': [symbol], 'qty': [quantity], 'value': [amount]})
+            df = pd.concat([df, new_row], ignore_index=True)
+        print(f"Added {quantity} of {symbol} with a total cost of {amount}")
+
+    elif action == "remove":
+        if symbol in df['Coin'].values:
+            # Fetch current holdings
+            current_qty = df.loc[df['Coin'] == symbol, 'qty'].values[0]
+            current_value = df.loc[df['Coin'] == symbol, 'value'].values[0]
+            new_qty = max(0, current_qty - quantity)
+            new_value = max(0, current_value - amount)
+
+            if new_qty == 0:
+                df = df[df['Coin'] != symbol]
+                print(f"Removed entire holding of {symbol}")
+            else:
+                df.loc[df['Coin'] == symbol, 'qty'] = new_qty
+                df.loc[df['Coin'] == symbol, 'value'] = new_value
+                print(f"Removed {quantity} of {symbol}; new qty: {new_qty}")
+        else:
+            print(f"Cannot remove {symbol} because it is not in the holdings")
+    else:
+        print("Invalid action received")
+
+    df.to_csv("static/holdings.csv", index=False)
+    return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     with app.app_context():

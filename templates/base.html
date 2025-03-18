@@ -28,6 +28,7 @@
         {% if current_user.is_authenticated %}
             <a href="{{ url_for('dashboard') }}">Dashboard</a>
             <a href="{{ url_for('crypto') }}">Crypto</a>
+            <a href="{{ url_for('cryptoh') }}">Crypto Holdings</a>
             <a href="{{ url_for('game') }}">Game</a>
             <a href="{{ url_for('logout') }}">Logout</a>
         {% else %}
