@@ -12,7 +12,8 @@ from email.mime.text import MIMEText
 import random
 import os
 import pandas as pd
-
+import requests
+import json
 
 
 
@@ -311,6 +312,13 @@ def update_crypto():
 
 
 if __name__ == '__main__':
+    KEY = os.environ.get("COIN_MARKETCAP_KEY")
+    if not KEY:
+        raise ValueError("COIN_MARKETCAP_KEY environment variable is missing!")
+
+    URL = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest'
+    crypto_data = CryptoData(KEY, URL)
+
     with app.app_context():
         db.create_all()
     app.run()
