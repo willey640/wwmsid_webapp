@@ -312,7 +312,7 @@ def update_crypto():
 
 
 if __name__ == '__main__':
-    KEY = os.environ.get("COIN_MARKETCAP_KEY")
+    KEY = "d8ed7cc4-926f-43ec-890f-5a20473233c1"
     if not KEY:
         raise ValueError("COIN_MARKETCAP_KEY environment variable is missing!")
 
